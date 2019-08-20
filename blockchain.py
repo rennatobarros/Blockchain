@@ -1,21 +1,55 @@
-import hashlib, json
+import hashlib, json, time
 
 
 class Blockchain(object):
 
+    def __init__(self):
+        self.chain = []
+        self.memPool = []
+        self.createGenesisBlock()
+
+    def createGenesisBlock(self):
+    	self.createBlock()
+
+    def createBlock(self):
+    	if self.chain:
+    		previous_block = self.chain[-1]
+    		previous_block.pop('transactions')
+    		previousHash = self.generateHash(previous_block)
+    	else:
+    		previousHash = '0000000000000000000000000000000000000000000000000000000000000000' 
+
+    	block = {
+    		'index': len(self.chain),
+    		'timestamp': int(time.time()),
+    		'nonce': 0,
+    		'merkleRoot': 0,
+    		'previousHash': previousHash,
+    		'transactions': []
+    	}
+
+    	self.chain.append(block)
+
+    	return block
+
     @staticmethod
-    def generate_hash(data):
-        data_byte = json.dumps(data).encode()
-        return hashlib.sha256(data_byte).hexdigest()
+    def generateHash(data):
+        blkSerial = json.dumps(data, sort_keys=True).encode()
+        return hashlib.sha256(blkSerial).hexdigest()
 
+    def printChain(self):
+    	for block in reversed(self.chain):
+    		# block.pop('transactions')
+    		selfhash = self.generateHash(block)
+    		print('===================================== %s° BLOCK ====================================' % block['index'])
+    		# print('Self Hash: ', selfhash)
+    		print('Timestamp: ', block['timestamp'])
+    		print('Nonce: ', block['nonce'])
+    		print('merkleRoot: ', block['merkleRoot'])
+    		print('previousHash: ', block['previousHash'])
+    		print('====================================================================================\n\n')
 
-var1 = {
-            'nome': "Jon Snow",
-            'idade': 18,
-        }
-expected_hash1 = "4145c81419ee987c94f741936c3277e9b281e2ffc9faa3edb5693128e1ee65c1"
-var1_hash = Blockchain.generate_hash(var1)
-print('Dados: {}'.format(var1))
-print('Hash   gerado: {}'.format(var1_hash))
-print('Hash esperado: {}'.format(expected_hash1))
-print('Iguais? {}\n'.format(expected_hash1==var1_hash))
+# Teste
+blockchain = Blockchain()
+for x in range(0, 13): blockchain.createBlock()
+blockchain.printChain()
