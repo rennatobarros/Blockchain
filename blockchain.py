@@ -33,22 +33,20 @@ class Blockchain(object):
 			'transactions': []
 		}
 
+		self.mineProofOfWork(block)
+
 		self.chain.append(block)
 
 		return block
 
 
 	def mineProofOfWork(self, prevBlock):
-
-
-
+		nonce = 0
 		while True:
-			prevBlock['nonce'] += 1
-			prev_hash = Blockchain.generateHash(prevBlock)
-			
-			if 
-
-		pass
+			nonce += 1
+			valid = Blockchain.isValidProof(prevBlock, nonce)
+			if valid:
+				break
 
 
 	@staticmethod
@@ -64,21 +62,21 @@ class Blockchain(object):
 		return Blockchain.generateHash(b)
 
 
-	@property
-	def prevBlock(self):
-		return self.chain[-1]
-
-
 	@staticmethod
 	def isValidProof(block, nonce):
-		
+		meta = str('0'*(DIFFICULTY-1)+'1'+'0'*(64-DIFFICULTY-1))
+
+		block['nonce'] = nonce
+		block_hash = Blockchain.getBlockID(block)
+
+		return (block_hash < meta)
 
 
 	def printChain(self):
 		for block in reversed(self.chain):
 			selfhash = Blockchain.getBlockID(block)
 
-
+			print(hex(int(selfhash, 16)))
 			print('\t\t\t\t\tA')
 			print('\t\t\t\t\t|\n')
 			print(' =================================== %s° BLOCK ==================================' % block['index'])
@@ -90,7 +88,9 @@ class Blockchain(object):
 			print(' ================================================================================')
 
 
-# Teste
 blockchain = Blockchain()
-for x in range(0, 13): blockchain.createBlock()
+for x in range(0, 8): blockchain.createBlock()
 # blockchain.printChain()
+
+for x in blockchain.chain :
+    print('[Bloco #{} : {}] Nonce: {} | É válido? {}'.format(x['index'], Blockchain.getBlockID(x), x['nonce'], Blockchain.isValidProof(x, x['nonce'])))
