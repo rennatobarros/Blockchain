@@ -42,11 +42,11 @@ def create_node():
     valid_address = ip+":"+port
 
     my_blockchain.nodes.add(valid_address)
+    print(my_blockchain.nodes)
 
     return valid_address
 
 @app.route('/nodes/resolve', methods=['GET'])
 def resolve_conflicts():
-    
-
-    return 
+    my_blockchain.resolveConflicts()
+    return 'Resolved'

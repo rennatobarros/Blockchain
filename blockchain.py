@@ -145,23 +145,23 @@ class Blockchain(object):
         return VerifyMessage(address, msg, signature)
 
 
-    def isValidChain(self, chain):
-        for i, block in enumerate(chain):
+    def isValidChain(chain):
+        for block in chain:
+            print("okokokokokok")
             valid_proof = Blockchain.isValidProof(block, block['nonce'])
 
             if not valid_proof:
                 return False
 
-            if i != 0:
+            if block['index'] != 1:
                 header_prev_hash = block['previousHash']
-                prev_block = copy.copy(chain[i-1])
+                i = int(block['index'])
+                prev_block = copy.copy(chain[i-2])
                 prev_block.pop('transactions')
 
                 block_prev_hash = Blockchain.generateHash(prev_block)
 
                 if header_prev_hash != block_prev_hash:
-                    # print(header_prev_hash)
-                    # print(block_prev_hash)
                     print("Bloco invalido! Hash do bloco anterior invalido.")
                     return False
 
@@ -171,12 +171,10 @@ class Blockchain(object):
                 transactions_merkle_root = Blockchain.generateMerkleRoot(copy_mempool)
 
                 if block_merkle_root != transactions_merkle_root:
-                    # print("Block merkle = " + block_merkle_root)
-                    # print("transactions merkle = " + transactions_merkle_root)
                     print("Bloco invalido! merkleRoot invalido.")
                     return False
 
-            print("Bloco %d valido " % i)
+            print("Bloco %d valido " % block['index'])
 
         return True
 
@@ -190,26 +188,14 @@ class Blockchain(object):
         return aux
 
     def resolveConflicts(self):
-        for node in nodes:
+        for node in self.nodes:
             response = requests.get("http://%s/chain" % node)
+            current_chain = json.loads(response.text)
+            is_valid = Blockchain.isValidChain(current_chain)
+
+            if is_valid:
+                if len(current_chain) > len(self.chain):
+                    self.chain = current_chain
+                    print("Chain Trocada")
             
 
-
-# Teste
-# #blockchain = Blockchain()
-
-# sender = '19sXoSbfcQD9K66f5hwP5vLwsaRyKLPgXF'
-# recipient = '1MxTkeEP2PmHSMze5tUZ1hAV3YTKu2Gh1N'
-
-# # Cria 5 blocos, incluindo o Genesis, contendo de 1-4 transacoes cada, com valores aleatorios, entre os enderecos indicados em sender e recipient.
-# for x in range(0, 4):
-#     for y in range(0, random.randint(1,4)):
-#         timestamp = int(time())
-#         amount = random.uniform(0.00000001, 100)
-#         blockchain.createTransaction(sender, recipient, amount, timestamp, 'L1US57sChKZeyXrev9q7tFm2dgA2ktJe2NP3xzXRv6wizom5MN1U')
-#     blockchain.createBlock()
-#     blockchain.mineProofOfWork(blockchain.prevBlock)
-
-# blockchain.printChain()
-
-# print(blockchain.isValidChain(blockchain.chain))
