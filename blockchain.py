@@ -28,12 +28,10 @@ class Blockchain(object):
             previousBlockCopy = copy.copy(previousBlock)
             previousBlockCopy.pop("transactions", None)
 
-        copy_mempool = copy.copy(self.memPool)
+        copy_mempool = []
 
-        for i in range(len(copy_mempool)):
-            copy_mempool[i] = Blockchain.generateHash(copy_mempool[i])
-
-        print(copy_mempool)
+        for i in range(len(self.memPool)):
+            copy_mempool.append(Blockchain.generateHash(self.memPool[i]))
 
         block = {
             'index': len(self.chain) + 1,
@@ -66,7 +64,9 @@ class Blockchain(object):
             "timestamp": timestamp,
         }
 
-        transaction["signature"] = Blockchain.sign(privKey, json.dumps(transaction, sort_keys=True))
+        signature = hashlib.sha256(Blockchain.sign(privKey, json.dumps(transaction, sort_keys=True))).hexdigest()
+        transaction["signature"] = signature
+
 
         self.memPool.append(transaction)
 
@@ -151,7 +151,11 @@ class Blockchain(object):
 
     def isValidChain(self, chain):
         for i, block in enumerate(chain):
-            prev_hash = ''
+
+            valid_proof = Blockchain.isValidProof(block, block['nonce'])
+
+            if not valid_proof:
+                return False
 
             if i != 0:
                 header_prev_hash = block['previousHash']
@@ -163,7 +167,7 @@ class Blockchain(object):
                 if header_prev_hash != block_prev_hash:
                     print(header_prev_hash)
                     print(block_prev_hash)
-                    print("Bloco invalido! Hash do block invalido")
+                    print("Bloco invalido! Hash do bloco anterior invalido.")
                     return False
 
             block_merkle_root = block['merkleRoot']
@@ -175,6 +179,8 @@ class Blockchain(object):
                 print(transactions_merkle_root)
                 print("Bloco invalido! merkleRoot invalido.")
                 return False
+
+
 
 
 
