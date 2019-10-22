@@ -28,15 +28,12 @@ class Blockchain(object):
             previousBlockCopy = copy.copy(previousBlock)
             previousBlockCopy.pop("transactions", None)
 
-        copy_mempool = []
-
-        for i in range(len(self.memPool)):
-            copy_mempool.append(Blockchain.generateHash(self.memPool[i]))
+        copy_mempool = Blockchain.getTxHashes(self.memPool)
 
         block = {
             'index': len(self.chain) + 1,
             'timestamp': int(time()),
-            'transactions': '',
+            'transactions': self.memPool,
             'merkleRoot': self.generateMerkleRoot(copy_mempool),
             'nonce': nonce,
             'previousHash': previousHash or self.generateHash(previousBlockCopy),
@@ -76,21 +73,15 @@ class Blockchain(object):
         copy_transactions = []
 
         if len(transactions) == 0:
-            return ''
+            return '0' * 64
         elif len(transactions) == 1:
             return transactions[0]
+        elif len(transactions)%2 != 0:
+            transactions.append(transactions[-1])
 
-        for i in range(0, len(transactions)-1, 2):
-            first_hash = Blockchain.generateHash(transactions[i])
-
-            second_hash = ''
-
-            if not transactions[i+1]:
-                second_hash = first_hash
-            else:
-                second_hash = Blockchain.generateHash(transactions[i+1])
-
-            copy_transactions.append(Blockchain.generateHash(first_hash+second_hash))
+        for i in range(0, len(transactions), 2):
+            hash = Blockchain.generateHash(transactions[i] + transactions[i+1])
+            copy_transactions.append(hash)
 
         return Blockchain.generateMerkleRoot(copy_transactions)
 
@@ -126,6 +117,7 @@ class Blockchain(object):
             print('| Self Hash: ', selfhash)
             print('| Timestamp: ', block['timestamp'])
             print('| Nonce: ', block['nonce'])
+            print('| transactions: ', block['transactions'])
             print('| merkleRoot: ', block['merkleRoot'])
             print('| previousHash: ', block['previousHash'])
             print(' ================================================================================')
@@ -151,7 +143,6 @@ class Blockchain(object):
 
     def isValidChain(self, chain):
         for i, block in enumerate(chain):
-            print(i)
             valid_proof = Blockchain.isValidProof(block, block['nonce'])
 
             if not valid_proof:
@@ -165,29 +156,35 @@ class Blockchain(object):
                 block_prev_hash = Blockchain.generateHash(prev_block)
 
                 if header_prev_hash != block_prev_hash:
-                    print(header_prev_hash)
-                    print(block_prev_hash)
+                    # print(header_prev_hash)
+                    # print(block_prev_hash)
                     print("Bloco invalido! Hash do bloco anterior invalido.")
                     return False
-                else:
-                    print(header_prev_hash)
-                    print(block_prev_hash)
-                    print("Tudo certo peraqui")
 
                 block_merkle_root = block['merkleRoot']
+                copy_mempool = Blockchain.getTxHashes(block['transactions'])
 
-                transactions_merkle_root = Blockchain.generateMerkleRoot(block['transactions'])
+                transactions_merkle_root = Blockchain.generateMerkleRoot(copy_mempool)
 
                 if block_merkle_root != transactions_merkle_root:
-                    print(i)
-                    print("Block merkle = " + block_merkle_root)
-                    print("transactions merkle = " + transactions_merkle_root)
+                    # print("Block merkle = " + block_merkle_root)
+                    # print("transactions merkle = " + transactions_merkle_root)
                     print("Bloco invalido! merkleRoot invalido.")
                     return False
 
-            print("bloco valido " + str(i))
+            print("Bloco %d valido " % i)
 
         return True
+
+    @staticmethod
+    def getTxHashes(data):
+        aux = []
+        for i in range(len(data)):
+            hash = Blockchain.generateHash(data[i])
+            aux.append(hash)
+
+        return aux
+
 
 # Teste
 blockchain = Blockchain()
@@ -206,4 +203,4 @@ for x in range(0, 4):
 
 # blockchain.printChain()
 
-print(blockchain.isValidChain(blockchain.chain))
+# print(blockchain.isValidChain(blockchain.chain))
