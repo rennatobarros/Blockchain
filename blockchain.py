@@ -3,6 +3,7 @@ import json
 from time import time
 import copy
 import random
+import requests
 
 from bitcoin.wallet import CBitcoinSecret
 from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
@@ -14,6 +15,7 @@ class Blockchain(object):
     def __init__(self):
         self.chain = []
         self.memPool = []
+        self.nodes = set()
         self.createGenesisBlock()
 
 
@@ -66,6 +68,8 @@ class Blockchain(object):
 
 
         self.memPool.append(transaction)
+
+        return True
 
 
     @staticmethod
@@ -185,21 +189,26 @@ class Blockchain(object):
 
         return aux
 
+    def resolveConflicts(self):
+        for node in nodes:
+            response = requests.get("http://%s/chain" % node)
+            
+
 
 # Teste
-blockchain = Blockchain()
+# #blockchain = Blockchain()
 
-sender = '19sXoSbfcQD9K66f5hwP5vLwsaRyKLPgXF'
-recipient = '1MxTkeEP2PmHSMze5tUZ1hAV3YTKu2Gh1N'
+# sender = '19sXoSbfcQD9K66f5hwP5vLwsaRyKLPgXF'
+# recipient = '1MxTkeEP2PmHSMze5tUZ1hAV3YTKu2Gh1N'
 
-# Cria 5 blocos, incluindo o Genesis, contendo de 1-4 transacoes cada, com valores aleatorios, entre os enderecos indicados em sender e recipient.
-for x in range(0, 4):
-    for y in range(0, random.randint(1,4)):
-        timestamp = int(time())
-        amount = random.uniform(0.00000001, 100)
-        blockchain.createTransaction(sender, recipient, amount, timestamp, 'L1US57sChKZeyXrev9q7tFm2dgA2ktJe2NP3xzXRv6wizom5MN1U')
-    blockchain.createBlock()
-    blockchain.mineProofOfWork(blockchain.prevBlock)
+# # Cria 5 blocos, incluindo o Genesis, contendo de 1-4 transacoes cada, com valores aleatorios, entre os enderecos indicados em sender e recipient.
+# for x in range(0, 4):
+#     for y in range(0, random.randint(1,4)):
+#         timestamp = int(time())
+#         amount = random.uniform(0.00000001, 100)
+#         blockchain.createTransaction(sender, recipient, amount, timestamp, 'L1US57sChKZeyXrev9q7tFm2dgA2ktJe2NP3xzXRv6wizom5MN1U')
+#     blockchain.createBlock()
+#     blockchain.mineProofOfWork(blockchain.prevBlock)
 
 # blockchain.printChain()
 
