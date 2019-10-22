@@ -151,7 +151,7 @@ class Blockchain(object):
 
     def isValidChain(self, chain):
         for i, block in enumerate(chain):
-
+            print(i)
             valid_proof = Blockchain.isValidProof(block, block['nonce'])
 
             if not valid_proof:
@@ -162,28 +162,32 @@ class Blockchain(object):
                 prev_block = copy.copy(chain[i-1])
                 prev_block.pop('transactions')
 
-                block_prev_hash = Blockchain.generateHash()
+                block_prev_hash = Blockchain.generateHash(prev_block)
 
                 if header_prev_hash != block_prev_hash:
                     print(header_prev_hash)
                     print(block_prev_hash)
                     print("Bloco invalido! Hash do bloco anterior invalido.")
                     return False
+                else:
+                    print(header_prev_hash)
+                    print(block_prev_hash)
+                    print("Tudo certo peraqui")
 
-            block_merkle_root = block['merkleRoot']
+                block_merkle_root = block['merkleRoot']
 
-            transactions_merkle_root = Blockchain.generateMerkleRoot(block['transactions'])
+                transactions_merkle_root = Blockchain.generateMerkleRoot(block['transactions'])
 
-            if block_merkle_root != transactions_merkle_root:
-                print(block_merkle_root)
-                print(transactions_merkle_root)
-                print("Bloco invalido! merkleRoot invalido.")
-                return False
+                if block_merkle_root != transactions_merkle_root:
+                    print(i)
+                    print("Block merkle = " + block_merkle_root)
+                    print("transactions merkle = " + transactions_merkle_root)
+                    print("Bloco invalido! merkleRoot invalido.")
+                    return False
 
+            print("bloco valido " + str(i))
 
-
-
-
+        return True
 
 # Teste
 blockchain = Blockchain()
@@ -200,4 +204,6 @@ for x in range(0, 4):
     blockchain.createBlock()
     blockchain.mineProofOfWork(blockchain.prevBlock)
 
-blockchain.printChain()
+# blockchain.printChain()
+
+print(blockchain.isValidChain(blockchain.chain))
