@@ -27,6 +27,7 @@ def get_mempool():
 @app.route('/mine', methods=['GET'])
 def create_block():
     my_blockchain.createBlock()
+    my_blockchain.mineProofOfWork(my_blockchain.prevBlock)
     return ''
 
 @app.route('/chain', methods=['GET'])
